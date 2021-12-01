@@ -2,37 +2,37 @@
 	"sources" : 
 	[
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/glfw-download"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/glfw-download"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/348a56fa66aa08285112e5836da14efb/glfw-download.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/08ca35f301b223fc53882f0012fed100/glfw-download.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/04854dc552b1d756b34806e04cfe8c47/glfw-download-complete.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/03e903e472ef49a11d432db468fcc848/glfw-download-complete.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-install.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-build.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-mkdir.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-configure.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-download.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-download.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-update.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-install.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-patch.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-mkdir.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-configure.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-patch.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-build.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-test.rule"
 		},
 		{
-			"file" : "C:/Dev/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/e78e77f0bd680b46414144f1ef510be5/glfw-download-test.rule"
+			"file" : "D:/UniversityAssiments/Animation/Animation2/EngineForAnimationCourse/external/.cache/glfw/CMakeFiles/20c15ce082ab2e6c71de9cdf2e1be41a/glfw-download-update.rule"
 		}
 	],
 	"target" : 

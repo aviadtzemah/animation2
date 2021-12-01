@@ -158,29 +158,40 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			break;
 		case 'w':
 		case 'W':
-			rndr->TranslateCamera(Eigen::Vector3f(0, 0, 0.03f));
+			rndr->SetDirection(5);
+			//rndr->TranslateCamera(Eigen::Vector3f(0, 0, 0.03f));
 			break;
 		case 's':
 		case 'S':
-			rndr->TranslateCamera(Eigen::Vector3f(0, 0, -0.03f));
+			rndr->SetDirection(6);
+			//rndr->TranslateCamera(Eigen::Vector3f(0, 0, -0.03f));
 			break;
 		case GLFW_KEY_UP:
-			rndr->TranslateCamera(Eigen::Vector3f(0, 0.01f,0));
+			rndr->SetDirection(1);
+			//rndr->TranslateCamera(Eigen::Vector3f(0, 0.01f, 0));
 			break;
 		case GLFW_KEY_DOWN:
-			rndr->TranslateCamera(Eigen::Vector3f(0, -0.01f,0));
-
+			rndr->SetDirection(2);
+			//rndr->TranslateCamera(Eigen::Vector3f(0, -0.01f,0));
 			break;
 		case GLFW_KEY_LEFT:
-				rndr->TranslateCamera(Eigen::Vector3f(-0.01f, 0,0));
+			rndr->SetDirection(3);
+			//rndr->TranslateCamera(Eigen::Vector3f(-0.01f, 0,0));
 			break;
 		case GLFW_KEY_RIGHT:
-			rndr->TranslateCamera(Eigen::Vector3f(0.01f, 0, 0));
+			rndr->SetDirection(4);
+			//rndr->TranslateCamera(Eigen::Vector3f(-0.01f, 0,0));
 			break;
+
 		case ' ':
 
 			break;
-		
+		case 'P':
+		case 'p':
+		{
+			rndr->Pause();
+			break;
+		}
 		default: 
 			Eigen::Vector3f shift;
 			float scale;

@@ -97,7 +97,8 @@ void Renderer::SetScene(igl::opengl::glfw::Viewer* viewer)
 IGL_INLINE void Renderer::init(igl::opengl::glfw::Viewer* viewer,int coresNum, igl::opengl::glfw::imgui::ImGuiMenu* _menu)
 {
 	scn = viewer;
-	
+	pause = true;
+	direction = 0;
 	doubleVariable = 0;
 	core().init(); 
 	menu = _menu;
@@ -152,7 +153,7 @@ void Renderer::MouseProcessing(int button)
 		if (button == 1)
 		{
 			float near = core().camera_dnear, far = core().camera_dfar, angle = core().camera_view_angle;
-			//float z = far + depth * (near - far);
+			float z = far + depth * (near - far);
 			
 			Eigen::Matrix4f tmpM = core().proj;
 			double xToMove = -(double)xrel / core().viewport[3] * (z+2*near) * (far) / (far + 2*near) * 2.0 * tanf(angle / 360 * M_PI) / (core().camera_zoom * core().camera_base_zoom);
@@ -164,9 +165,12 @@ void Renderer::MouseProcessing(int button)
 		}
 		else
 		{
-			scn->data().MyRotate(scn->data().MakeTransd().block<3,3>(0,0) );
+			scn->data().MyRotate(Eigen::Vector3d(1, 0, 0), (-yrel / 180));
+			scn->data().MyRotate(Eigen::Vector3d(0, 1, 0), (-xrel / 180));
 
-			scn->data().MyRotate(scn->data().MakeTransd().block<3, 3>(0, 0));
+			// scn->data().MyRotate(scn->data().MakeTransd().block<3,3>(0,0) );
+
+			// scn->data().MyRotate(scn->data().MakeTransd().block<3, 3>(0, 0));
 
 		}
 	}
@@ -186,8 +190,11 @@ void Renderer::MouseProcessing(int button)
 		}
 		else
 		{
-			scn->MyRotate(scn->MakeTransd().block<3, 3>(0, 0));
-			scn->MyRotate(scn->MakeTransd().block<3, 3>(0, 0));
+			scn->MyRotate(Eigen::Vector3d(1, 0, 0), (-yrel / 180));
+			scn->MyRotate(Eigen::Vector3d(0, 1, 0), (-xrel / 180));
+
+			// scn->MyRotate(scn->MakeTransd().block<3, 3>(0, 0));
+			// scn->MyRotate(scn->MakeTransd().block<3, 3>(0, 0));
 
 		}
 	}
@@ -205,6 +212,50 @@ void Renderer::RotateCamera(float amtX, float amtY)
 		Mat << cos(amtY),0,sin(amtY),  0, 1, 0 ,  -sin(amtY), 0, cos(amtY) ;
 	core().camera_eye = Mat* core().camera_eye;
 	
+}
+
+void Renderer::Pause(){
+	pause = !pause;
+}
+
+// 1 - up
+// 2 - down
+// 3 - left
+// 4 - right
+// 5 - inwards
+// 6- outwards
+void Renderer::SetDirection(int dir){
+	direction = dir;
+	pause = false;
+}
+
+
+void Renderer::Move(){
+	if(!pause){
+		switch(direction)
+		{
+			case 1: // up
+				scn->data().MyTranslate(Eigen::Vector3d(0, 0.005, 0), true);
+				break;
+			case 2: // down
+				scn->data().MyTranslate(Eigen::Vector3d(0, -0.005, 0), true);
+				break;
+			case 3: // left
+				scn->data().MyTranslate(Eigen::Vector3d(-0.005, 0, 0), true);
+				break;
+			case 4: // right
+				scn->data().MyTranslate(Eigen::Vector3d(0.005, 0, 0), true);
+				break;
+			case 5: //inward
+				scn->data().MyTranslate(Eigen::Vector3d(0, 0, 0.005), true);
+				break;
+			case 6: //outward
+				scn->data().MyTranslate(Eigen::Vector3d(0, 0, -0.005), true);
+				break;
+			default:
+				break;
+		}
+	}	
 }
 
 Renderer::~Renderer()

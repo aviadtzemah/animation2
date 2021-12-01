@@ -104,6 +104,9 @@ public:
 	void TranslateCamera(Eigen::Vector3f amt);
 	void RotateCamera(float amtX, float amtY);
 	inline bool IsPicked() { return scn->isPicked; }
+	void Move();
+	void Pause();
+	void SetDirection(int dir);
 	
 private:
 	// Stores all the viewing options
@@ -118,5 +121,7 @@ private:
 	double doubleVariable;
 	igl::opengl::glfw::imgui::ImGuiMenu* menu;
 	double z;
+	bool pause;
+	int direction;
 };
 

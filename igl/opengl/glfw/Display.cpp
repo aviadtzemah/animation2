@@ -129,6 +129,9 @@ bool Display::launch_rendering(bool loop)
 		if (renderer->core().is_animating || frame_counter++ < num_extra_frames)
 		{//motion
 			glfwPollEvents();
+
+			renderer->Move();
+
 			// In microseconds
 			double duration = 1000000. * (igl::get_seconds() - tic);
 			const double min_duration = 1000000. / renderer->core().animation_max_fps;
