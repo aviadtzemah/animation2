@@ -47,6 +47,62 @@ IGL_INLINE void igl::opengl::ViewerData::set_face_based(bool newvalue)
   }
 }
 
+IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
+    tree.init(V, F);
+    box = Eigen::AlignedBox<double, 3>(V.colwise().minCoeff(), V.colwise().maxCoeff());
+
+    Eigen::MatrixXd V_box(8, 3);
+    V_box <<
+        (Eigen::RowVector3d)box.corner(box.BottomLeftFloor),
+        (Eigen::RowVector3d)box.corner(box.BottomRightFloor),
+        (Eigen::RowVector3d)box.corner(box.TopLeftFloor),
+        (Eigen::RowVector3d)box.corner(box.TopRightFloor),
+        (Eigen::RowVector3d)box.corner(box.BottomLeftCeil),
+        (Eigen::RowVector3d)box.corner(box.BottomRightCeil),
+        (Eigen::RowVector3d)box.corner(box.TopLeftCeil),
+        (Eigen::RowVector3d)box.corner(box.TopRightCeil);
+
+    // Edges of the bounding box
+    /*add_edges(BottomLeftCeil, BottomRightCeil, colorVec);
+	add_edges(BottomLeftCeil, BottomLeftFloor, colorVec);
+	add_edges(BottomRightCeil, BottomRightFloor, colorVec);
+	add_edges(BottomLeftFloor, BottomRightFloor, colorVec);
+	add_edges(TopLeftCeil, TopRightCeil, colorVec);
+	add_edges(TopRightCeil, TopRightFloor, colorVec);
+	add_edges(TopLeftCeil, TopLeftFloor, colorVec);
+	add_edges(TopLeftFloor, TopRightFloor, colorVec);
+	add_edges(TopLeftCeil, BottomLeftCeil, colorVec);
+	add_edges(TopRightFloor, BottomRightFloor, colorVec);
+	add_edges(TopRightCeil, BottomRightCeil, colorVec);
+	add_edges(TopLeftFloor, BottomLeftFloor, colorVec);*/
+    Eigen::MatrixXi E_box(12, 2);
+    E_box <<
+        4, 5,
+        4, 0,
+        5, 1,
+        0, 1,
+        6, 7,
+        7, 3,
+        6, 2,
+        2, 3,
+        6, 4,
+        3, 1,
+        7, 5,
+        2, 0;
+
+    // Plot the corners of the bounding box as points
+    add_points(V_box, Eigen::RowVector3d(0, 1, 0));
+
+    // Plot the edges of the bounding box
+    for (unsigned i = 0;i < E_box.rows(); ++i)
+        add_edges
+        (
+            V_box.row(E_box(i, 0)),
+            V_box.row(E_box(i, 1)),
+            Eigen::RowVector3d(0, 1, 0)
+        );
+}
+
 // Helpers that draws the most common meshes
 IGL_INLINE void igl::opengl::ViewerData::set_mesh(
     const Eigen::MatrixXd& _V, const Eigen::MatrixXi& _F)
@@ -88,6 +144,8 @@ IGL_INLINE void igl::opengl::ViewerData::set_mesh(
       cerr << "ERROR (set_mesh): The new mesh has a different number of vertices/faces. Please clear the mesh before plotting."<<endl;
   }
   dirty |= MeshGL::DIRTY_FACE | MeshGL::DIRTY_POSITION;
+
+  init_mesh();
 }
 
 IGL_INLINE void igl::opengl::ViewerData::set_vertices(const Eigen::MatrixXd& _V)
