@@ -5,6 +5,9 @@
 #include "igl/look_at.h"
 //#include <Eigen/Dense>
 
+// OUR imports
+#include <igl/AABB.h>
+
 Renderer::Renderer() : selected_core_index(0),
 next_core_id(2)
 {
@@ -97,8 +100,6 @@ void Renderer::SetScene(igl::opengl::glfw::Viewer* viewer)
 IGL_INLINE void Renderer::init(igl::opengl::glfw::Viewer* viewer,int coresNum, igl::opengl::glfw::imgui::ImGuiMenu* _menu)
 {
 	scn = viewer;
-	pause = true;
-	direction = 0;
 	doubleVariable = 0;
 	core().init(); 
 	menu = _menu;
@@ -210,53 +211,98 @@ void Renderer::RotateCamera(float amtX, float amtY)
 	core().camera_eye = core().camera_eye + Eigen::Vector3f(0,amtY,0);
 	Eigen::Matrix3f Mat;
 		Mat << cos(amtY),0,sin(amtY),  0, 1, 0 ,  -sin(amtY), 0, cos(amtY) ;
-	core().camera_eye = Mat* core().camera_eye;
-	
-}
-
-void Renderer::Pause(){
-	pause = !pause;
-}
-
-// 1 - up
-// 2 - down
-// 3 - left
-// 4 - right
-// 5 - inwards
-// 6- outwards
-void Renderer::SetDirection(int dir){
-	direction = dir;
-	pause = false;
+	core().camera_eye = Mat* core().camera_eye;	
 }
 
 
-void Renderer::Move(){
-	if(!pause){
-		switch(direction)
-		{
+
+void Renderer::Move() {
+	double velocity = 0.005;
+	for (auto& data : scn->data_list)
+	{
+		if (!data.pause) {
+			switch (data.direction)
+			{
 			case 1: // up
-				scn->data().MyTranslate(Eigen::Vector3d(0, 0.005, 0), true);
+				data.MyTranslate(Eigen::Vector3d(0, velocity, 0), true);
+				data.tree->m_box.translate(Eigen::Vector3d(0, velocity, 0));
 				break;
 			case 2: // down
-				scn->data().MyTranslate(Eigen::Vector3d(0, -0.005, 0), true);
+				data.MyTranslate(Eigen::Vector3d(0, -velocity, 0), true);
+				data.tree->m_box.translate(Eigen::Vector3d(0, -velocity, 0));
+
 				break;
 			case 3: // left
-				scn->data().MyTranslate(Eigen::Vector3d(-0.005, 0, 0), true);
+				data.MyTranslate(Eigen::Vector3d(-velocity, 0, 0), true);
+				data.tree->m_box.translate(Eigen::Vector3d(-velocity, 0, 0));
+
 				break;
 			case 4: // right
-				scn->data().MyTranslate(Eigen::Vector3d(0.005, 0, 0), true);
+				data.MyTranslate(Eigen::Vector3d(velocity, 0, 0), true);
+				data.tree->m_box.translate(Eigen::Vector3d(velocity, 0, 0));
+
 				break;
 			case 5: //inward
-				scn->data().MyTranslate(Eigen::Vector3d(0, 0, 0.005), true);
+				data.MyTranslate(Eigen::Vector3d(0, 0, velocity), true);
+				data.tree->m_box.translate(Eigen::Vector3d(0, 0, velocity));
+
 				break;
 			case 6: //outward
-				scn->data().MyTranslate(Eigen::Vector3d(0, 0, -0.005), true);
+				data.MyTranslate(Eigen::Vector3d(0, 0, -velocity), true);
+				data.tree->m_box.translate(Eigen::Vector3d(0, 0, -velocity));
 				break;
 			default:
 				break;
+			}
 		}
-	}	
+	}
 }
+
+
+bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2){
+	if(tree1->is_leaf() && tree2->is_leaf()){
+		obj1.draw_box(tree1->m_box);
+		obj2.draw_box(tree2->m_box);
+		return true;
+	}
+
+	
+
+	if(tree1->m_box.intersects(tree2->m_box)){
+		return CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right , tree2->is_leaf() ? tree2 : tree2->m_right)
+			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left)
+			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right)
+			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left);
+	}
+	return false;
+}
+
+bool Renderer::CheckCollision() {
+	/*if(CheckCollisionRec(scn->data_list[0].tree, scn->data_list[1].tree)){
+		scn->data_list[0].Pause();
+		scn->data_list[1].Pause();
+		return true;
+	}*/
+	for (auto& object1 : scn->data_list)
+	{
+		for (auto& object2 : scn->data_list)
+		{
+			if (object1.id != object2.id) { // checking we're not checking the collision between an object and itself
+				
+				if (!object1.pause || !object2.pause) {
+					if (CheckCollisionRec(object1, object2, object1.tree, object2.tree)) {
+						object1.pause = true;
+						object2.pause = true;
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+
 
 Renderer::~Renderer()
 {

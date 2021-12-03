@@ -131,6 +131,7 @@ bool Display::launch_rendering(bool loop)
 			glfwPollEvents();
 
 			renderer->Move();
+			renderer->CheckCollision();
 
 			// In microseconds
 			double duration = 1000000. * (igl::get_seconds() - tic);

@@ -156,10 +156,14 @@ public:
   Eigen::MatrixXi F; // Faces of the mesh (#F x 3)
 
   // OUR ADDITIONS
-  igl::AABB<Eigen::MatrixXd,3> tree;
-  Eigen::AlignedBox<double, 3> box;
-
+  igl::AABB<Eigen::MatrixXd,3> * tree;
+  Eigen::AlignedBox<double, 3> outer_box;
+  bool pause;
+  int direction;
   IGL_INLINE void init_mesh();
+  IGL_INLINE void SetDirection(int dir);
+  IGL_INLINE void Pause();
+  IGL_INLINE void draw_box(Eigen::AlignedBox<double, 3> box);
 
   // Per face attributes
   Eigen::MatrixXd F_normals; // One normal per face

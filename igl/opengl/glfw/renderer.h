@@ -9,6 +9,9 @@
 #include <../imgui/imgui.h>
 struct GLFWwindow;
 
+// OUR imports
+#include <igl/AABB.h>
+
 
 class Renderer 
 {
@@ -105,8 +108,8 @@ public:
 	void RotateCamera(float amtX, float amtY);
 	inline bool IsPicked() { return scn->isPicked; }
 	void Move();
-	void Pause();
-	void SetDirection(int dir);
+	bool CheckCollision();
+	bool CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2);
 	
 private:
 	// Stores all the viewing options
@@ -121,7 +124,7 @@ private:
 	double doubleVariable;
 	igl::opengl::glfw::imgui::ImGuiMenu* menu;
 	double z;
-	bool pause;
-	int direction;
+	// bool pause;
+	// int direction;
 };
 

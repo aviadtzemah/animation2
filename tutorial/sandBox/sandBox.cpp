@@ -24,7 +24,7 @@ void SandBox::Init(const std::string &config)
 	}
 	else
 	{
-		int i = 0;
+		//int i = 0;
 		while (nameFileout >> item_name)
 		{
 			std::cout << "openning " << item_name << std::endl;
@@ -36,8 +36,8 @@ void SandBox::Init(const std::string &config)
 			data().point_size = 10;
 			data().line_width = 2;
 			data().set_visible(false, 1);
-			data().SetCenterOfRotaion(Eigen::RowVector3d(i, 0, 0));
-			i++;
+			/*data().SetCenterOfRotaion(Eigen::RowVector3d(i, 0, 0));
+			i++;*/
 		}
 		nameFileout.close();
 	}

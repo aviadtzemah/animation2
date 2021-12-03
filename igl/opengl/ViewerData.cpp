@@ -48,19 +48,24 @@ IGL_INLINE void igl::opengl::ViewerData::set_face_based(bool newvalue)
 }
 
 IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
-    tree.init(V, F);
-    box = Eigen::AlignedBox<double, 3>(V.colwise().minCoeff(), V.colwise().maxCoeff());
+  	pause = true;
+	  direction = 0;
+    MyTranslate(Eigen::Vector3d(id * 2, 0 , 0), true);
+    tree = new igl::AABB<Eigen::MatrixXd, 3>();
+    tree->init(V, F);
+    outer_box = tree->m_box;
+    tree->m_box.translate(Eigen::Vector3d(id * 2, 0, 0));
 
     Eigen::MatrixXd V_box(8, 3);
     V_box <<
-        (Eigen::RowVector3d)box.corner(box.BottomLeftFloor),
-        (Eigen::RowVector3d)box.corner(box.BottomRightFloor),
-        (Eigen::RowVector3d)box.corner(box.TopLeftFloor),
-        (Eigen::RowVector3d)box.corner(box.TopRightFloor),
-        (Eigen::RowVector3d)box.corner(box.BottomLeftCeil),
-        (Eigen::RowVector3d)box.corner(box.BottomRightCeil),
-        (Eigen::RowVector3d)box.corner(box.TopLeftCeil),
-        (Eigen::RowVector3d)box.corner(box.TopRightCeil);
+        (Eigen::RowVector3d)outer_box.corner(outer_box.BottomLeftFloor),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.BottomRightFloor),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.TopLeftFloor),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.TopRightFloor),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.BottomLeftCeil),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.BottomRightCeil),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.TopLeftCeil),
+        (Eigen::RowVector3d)outer_box.corner(outer_box.TopRightCeil);
 
     // Edges of the bounding box
     /*add_edges(BottomLeftCeil, BottomRightCeil, colorVec);
@@ -101,6 +106,61 @@ IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
             V_box.row(E_box(i, 1)),
             Eigen::RowVector3d(0, 1, 0)
         );
+}
+
+// 1 - up
+// 2 - down
+// 3 - left
+// 4 - right
+// 5 - inwards
+// 6- outwards
+IGL_INLINE void igl::opengl::ViewerData::SetDirection(int dir) {
+    direction = dir;
+    pause = false;
+}
+
+IGL_INLINE void igl::opengl::ViewerData::Pause(){
+	pause = !pause;
+}
+
+IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> box) {
+  Eigen::MatrixXd V_box(8, 3);
+    V_box <<
+        (Eigen::RowVector3d)box.corner(box.BottomLeftFloor),
+        (Eigen::RowVector3d)box.corner(box.BottomRightFloor),
+        (Eigen::RowVector3d)box.corner(box.TopLeftFloor),
+        (Eigen::RowVector3d)box.corner(box.TopRightFloor),
+        (Eigen::RowVector3d)box.corner(box.BottomLeftCeil),
+        (Eigen::RowVector3d)box.corner(box.BottomRightCeil),
+        (Eigen::RowVector3d)box.corner(box.TopLeftCeil),
+        (Eigen::RowVector3d)box.corner(box.TopRightCeil);
+
+  Eigen::MatrixXi E_box(12, 2);
+  E_box <<
+      4, 5,
+      4, 0,
+      5, 1,
+      0, 1,
+      6, 7,
+      7, 3,
+      6, 2,
+      2, 3,
+      6, 4,
+      3, 1,
+      7, 5,
+      2, 0;
+
+    // Plot the corners of the bounding box as points
+    add_points(V_box, Eigen::RowVector3d(0, 0, 1));
+
+    // Plot the edges of the bounding box
+    for (unsigned i = 0;i < E_box.rows(); ++i)
+        add_edges
+        (
+            V_box.row(E_box(i, 0)),
+            V_box.row(E_box(i, 1)),
+            Eigen::RowVector3d(0, 0, 1)
+        );     
 }
 
 // Helpers that draws the most common meshes
