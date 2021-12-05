@@ -106,6 +106,21 @@ IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
             V_box.row(E_box(i, 1)),
             Eigen::RowVector3d(0, 1, 0)
         );
+
+    //draw_all(tree);
+}
+
+IGL_INLINE bool igl::opengl::ViewerData::draw_all(igl::AABB<Eigen::MatrixXd, 3>* tree) {
+    bool stam = true;
+    if (tree->is_leaf()) {
+        draw_box(tree->m_box);
+        return true;
+    }
+    else {
+        stam = draw_all(tree->m_right);
+        stam = draw_all(tree->m_left);
+    }    
+    return stam;
 }
 
 // 1 - up

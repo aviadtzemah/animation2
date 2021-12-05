@@ -109,7 +109,7 @@ public:
 	inline bool IsPicked() { return scn->isPicked; }
 	void Move();
 	bool CheckCollision();
-	bool CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2);
+	bool CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2, int d);
 	
 private:
 	// Stores all the viewing options

@@ -259,22 +259,29 @@ void Renderer::Move() {
 }
 
 
-bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2){
+bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2, int d){
+	bool stam = false;
 	if(tree1->is_leaf() && tree2->is_leaf()){
+		//std::cout << "fuck " << d << std::endl;
 		obj1.draw_box(tree1->m_box);
 		obj2.draw_box(tree2->m_box);
 		return true;
 	}
 
-	
-
 	if(tree1->m_box.intersects(tree2->m_box)){
-		return CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right , tree2->is_leaf() ? tree2 : tree2->m_right)
-			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left)
-			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right)
-			|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left);
+		//std::cout << d << std::endl;
+		++d;
+		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_right, d);
+		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left, d);
+		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right, d);
+		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left, d);
+			
+		// return CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_right, d++)
+		// 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left, d++)
+		// 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right, d++)
+		// 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left, d++);
 	}
-	return false;
+	return stam;
 }
 
 bool Renderer::CheckCollision() {
@@ -290,7 +297,8 @@ bool Renderer::CheckCollision() {
 			if (object1.id != object2.id) { // checking we're not checking the collision between an object and itself
 				
 				if (!object1.pause || !object2.pause) {
-					if (CheckCollisionRec(object1, object2, object1.tree, object2.tree)) {
+					if (CheckCollisionRec(object1, object2, object1.tree, object2.tree, 0)) {
+						std::cout << "fuck "<< std::endl;
 						object1.pause = true;
 						object2.pause = true;
 						return true;
