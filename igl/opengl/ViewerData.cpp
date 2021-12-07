@@ -47,14 +47,32 @@ IGL_INLINE void igl::opengl::ViewerData::set_face_based(bool newvalue)
   }
 }
 
+IGL_INLINE bool igl::opengl::ViewerData::RecMove(igl::AABB<Eigen::MatrixXd, 3>* tree, Eigen::Vector3d direction) {
+    if (tree->is_leaf()) {
+        tree->m_box.translate(direction);
+        return true;
+    }
+    else {
+        tree->m_box.translate(direction);
+        RecMove(tree->m_right, direction);
+        RecMove(tree->m_left, direction);
+    }
+    return false;
+}
+
 IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
   	pause = true;
-	  direction = 0;
+	direction = 0;
+    center_dif = Eigen::Vector3d(0, 0, 0);
     MyTranslate(Eigen::Vector3d(id * 2, 0 , 0), true);
     tree = new igl::AABB<Eigen::MatrixXd, 3>();
     tree->init(V, F);
     outer_box = tree->m_box;
-    tree->m_box.translate(Eigen::Vector3d(id * 2, 0, 0));
+    //tree->m_box.translate(Eigen::Vector3d(id * 2, 0, 0));
+    center_dif += Eigen::Vector3d(id * 2, 0, 0);
+
+    std::cout << "main center: " << tree->m_box.center() << std::endl;
+    std::cout << "left center:" << tree->m_left->m_box.center() << std::endl;
 
     Eigen::MatrixXd V_box(8, 3);
     V_box <<
@@ -107,7 +125,8 @@ IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
             Eigen::RowVector3d(0, 1, 0)
         );
 
-    //draw_all(tree);
+    draw_all(tree);
+    RecMove(tree, Eigen::Vector3d(id * 2, 0, 0));
 }
 
 IGL_INLINE bool igl::opengl::ViewerData::draw_all(igl::AABB<Eigen::MatrixXd, 3>* tree) {
@@ -166,7 +185,7 @@ IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> b
       2, 0;
 
     // Plot the corners of the bounding box as points
-    add_points(V_box, Eigen::RowVector3d(0, 0, 1));
+    add_points(V_box, Eigen::RowVector3d(1, 1, 1));
 
     // Plot the edges of the bounding box
     for (unsigned i = 0;i < E_box.rows(); ++i)
@@ -174,7 +193,7 @@ IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> b
         (
             V_box.row(E_box(i, 0)),
             V_box.row(E_box(i, 1)),
-            Eigen::RowVector3d(0, 0, 1)
+            Eigen::RowVector3d(1, 1, 1)
         );     
 }
 

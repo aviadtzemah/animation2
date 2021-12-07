@@ -215,9 +215,21 @@ void Renderer::RotateCamera(float amtX, float amtY)
 }
 
 
+bool Renderer::RecMove(igl::AABB<Eigen::MatrixXd, 3>* tree, Eigen::Vector3d direction) {
+	if (tree->is_leaf()) {
+		tree->m_box.translate(direction);
+		return true;
+	}
+	else {
+		tree->m_box.translate(direction);
+		RecMove(tree->m_right, direction);
+		RecMove(tree->m_left, direction);
+	}
+	return false;
+}
 
 void Renderer::Move() {
-	double velocity = 0.005;
+	double velocity = 0.015;
 	for (auto& data : scn->data_list)
 	{
 		if (!data.pause) {
@@ -225,31 +237,39 @@ void Renderer::Move() {
 			{
 			case 1: // up
 				data.MyTranslate(Eigen::Vector3d(0, velocity, 0), true);
-				data.tree->m_box.translate(Eigen::Vector3d(0, velocity, 0));
+				//data.tree->m_box.translate(Eigen::Vector3d(0, velocity, 0));
+				data.center_dif += Eigen::Vector3d(0, velocity, 0);
+				RecMove(data.tree, Eigen::Vector3d(0, velocity, 0));
 				break;
 			case 2: // down
 				data.MyTranslate(Eigen::Vector3d(0, -velocity, 0), true);
-				data.tree->m_box.translate(Eigen::Vector3d(0, -velocity, 0));
-
+				//data.tree->m_box.translate(Eigen::Vector3d(0, -velocity, 0));
+				data.center_dif += Eigen::Vector3d(0, -velocity, 0);
+				RecMove(data.tree, Eigen::Vector3d(0, -velocity, 0));
 				break;
 			case 3: // left
 				data.MyTranslate(Eigen::Vector3d(-velocity, 0, 0), true);
-				data.tree->m_box.translate(Eigen::Vector3d(-velocity, 0, 0));
-
+				//data.tree->m_box.translate(Eigen::Vector3d(-velocity, 0, 0));
+				data.center_dif += Eigen::Vector3d(-velocity, 0, 0);
+				RecMove(data.tree, Eigen::Vector3d(-velocity, 0, 0));
 				break;
 			case 4: // right
 				data.MyTranslate(Eigen::Vector3d(velocity, 0, 0), true);
-				data.tree->m_box.translate(Eigen::Vector3d(velocity, 0, 0));
-
+				//data.tree->m_box.translate(Eigen::Vector3d(velocity, 0, 0));
+				data.center_dif += Eigen::Vector3d(velocity, 0, 0);
+				RecMove(data.tree, Eigen::Vector3d(velocity, 0, 0));
 				break;
 			case 5: //inward
 				data.MyTranslate(Eigen::Vector3d(0, 0, velocity), true);
-				data.tree->m_box.translate(Eigen::Vector3d(0, 0, velocity));
-
+				//data.tree->m_box.translate(Eigen::Vector3d(0, 0, velocity));
+				data.center_dif += Eigen::Vector3d(0, 0, velocity);
+				RecMove(data.tree, Eigen::Vector3d(0, 0, velocity));
 				break;
 			case 6: //outward
 				data.MyTranslate(Eigen::Vector3d(0, 0, -velocity), true);
-				data.tree->m_box.translate(Eigen::Vector3d(0, 0, -velocity));
+				//data.tree->m_box.translate(Eigen::Vector3d(0, 0, -velocity));
+				data.center_dif += Eigen::Vector3d(0, 0, -velocity);
+				RecMove(data.tree, Eigen::Vector3d(0, 0, velocity));
 				break;
 			default:
 				break;
@@ -277,6 +297,7 @@ double Renderer::c_i(Eigen::RowVector3d Bj0, Eigen::RowVector3d Ai, Eigen::RowVe
 
 bool Renderer::does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedBox<double, 3> box2, Eigen::Matrix3d rotation1, Eigen::Matrix3d rotation2) {
 	Eigen::RowVector3d D = box1.center() - box2.center();
+	Eigen::Matrix3d C = rotation1.transpose() * rotation2;
 
 	// box 1 axis
 	Eigen::RowVector3d A0 = rotation1.row(0);
@@ -306,7 +327,7 @@ bool Renderer::does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedB
 	double c01 = c_i(B0, A0, B2, sign(0, 2));
 	double c02 = c_i(B0, A0, B1, sign(0, 1));
 
-	// first check
+	// 1st check
 	if (std::abs(A0.dot(D)) > a0 + (b0 * std::abs(c00) + b1 * std::abs(c01) + b2 * std::abs(c02))) {
 		return false;
 	}
@@ -315,7 +336,7 @@ bool Renderer::does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedB
 	double c11 = c_i(B0, A1, B2, sign(0, 2));
 	double c12 = c_i(B0, A1, B1, sign(0, 1));
 
-	// second check
+	// 2nd check
 	if (std::abs(A1.dot(D)) > a1 + (b0 * std::abs(c10) + b1 * std::abs(c11) + b2 * std::abs(c12))) {
 		return false;
 	}
@@ -324,50 +345,102 @@ bool Renderer::does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedB
 	double c21 = c_i(B0, A1, B2, sign(0, 2));
 	double c22 = c_i(B0, A1, B1, sign(0, 1));
 
-	// third check
+	// 3rd check
 	if (std::abs(A2.dot(D)) > a2 + (b0 * std::abs(c20) + b1 * std::abs(c21) + b2 * std::abs(c22))) {
 		return false;
 	}
 
-	// fourth check
+	// 4th check
 	if (std::abs(B0.dot(D)) > b0 + (a0 * std::abs(c00) + a1 * std::abs(c10) + a2 * std::abs(c20))) {
 		return false;
 	}
 
-	// fifth check
+	// 5th check
 	if (std::abs(B1.dot(D)) > b1 + (a0 * std::abs(c01) + a1 * std::abs(c11) + a2 * std::abs(c21))) {
 		return false;
 	}
 
-	// sixth check
+	// 6th check
 	if (std::abs(B2.dot(D)) > b2 + (a0 * std::abs(c02) + a1 * std::abs(c12) + a2 * std::abs(c22))) {
 		return false;
 	}
 
-	// seventh check...
+	// 7th check
+	if (std::abs(c10 * A2.dot(D) - c20 * A1.dot(D)) > a1 * std::abs(c20) + a2 * std::abs(c10) + b1 * std::abs(c02) + b2 * std::abs(c01)) {
+		return false;
+	}
+
+	// 8th check
+	if (std::abs(c11 * A2.dot(D) - c21 * A1.dot(D)) > a1 * std::abs(c21) + a2 * std::abs(c11) + b0 * std::abs(c02) + b2 * std::abs(c00)) {
+		return false;
+	}
+
+	// 9th eck
+	if (std::abs(c12 * A2.dot(D) - c22 * A1.dot(D)) > a1 * std::abs(c22) + a2 * std::abs(c12) + b0 * std::abs(c01) + b1 * std::abs(c00)) {
+		return false;
+	}
+
+	// 10th eck
+	if (std::abs(c20 * A0.dot(D) - c00 * A2.dot(D)) > a0 * std::abs(c20) + a2 * std::abs(c00) + b1 * std::abs(c12) + b2 * std::abs(c11)) {
+		return false;
+	}
+
+	// 11th eck
+	if (std::abs(c21 * A0.dot(D) - c01 * A2.dot(D)) > a0 * std::abs(c21) + a2 * std::abs(c01) + b0 * std::abs(c12) + b2 * std::abs(c10)) {
+		return false;
+	}
+
+	// 12th eck
+	if (std::abs(c22 * A0.dot(D) - c02 * A2.dot(D)) > a0 * std::abs(c22) + a2 * std::abs(c02) + b0 * std::abs(c11) + b1 * std::abs(c10)) {
+		return false;
+	}
+
+	// 13th eck
+	if (std::abs(c00 * A1.dot(D) - c10 * A0.dot(D)) > a0 * std::abs(c10) + a1 * std::abs(c00) + b1 * std::abs(c22) + b2 * std::abs(c21)) {
+		return false;
+	}
+
+	// 14th eck
+	if (std::abs(c01 * A1.dot(D) - c11 * A0.dot(D)) > a0 * std::abs(c11) + a1 * std::abs(c01) + b0 * std::abs(c22) + b2 * std::abs(c20)) {
+		return false;
+	}
+
+	// 14th eck
+	if (std::abs(c02 * A1.dot(D) - c12 * A0.dot(D)) > a0 * std::abs(c12) + a1 * std::abs(c02) + b0 * std::abs(c21) + b1 * std::abs(c20)) {
+		return false;
+	}
 
 	return true;
 }
 
 
-bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2, int d){
-	//bool stam = false;
-	if(tree1->is_leaf() && tree2->is_leaf()){
-		//std::cout << "fuck " << d << std::endl;
+bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2){
+
+	// translating the boxes along the tree
+	/*if (d != 0) {
+		tree1->m_box.translate(obj1.center_dif);
+		tree2->m_box.translate(obj2.center_dif);
+	}*/
+
+	if(tree1->is_leaf() && tree2->is_leaf()){	
 		if (does_intersect(tree1->m_box, tree2->m_box, obj1.GetRotation(), obj2.GetRotation())) {
+			std::cout << "fuck " << std::endl;
+			std::cout << tree1->m_box.center() << std::endl;
+			std::cout << tree2->m_box.center() << std::endl;
 			obj1.draw_box(tree1->m_box);
 			obj2.draw_box(tree2->m_box);
+
 			return true;
 		}
 
 		return false;
 	}
-
+	// does_intersect(tree1->m_box, tree2->m_box, obj1.GetRotation(), obj2.GetRotation())
 	if(does_intersect(tree1->m_box, tree2->m_box, obj1.GetRotation(), obj2.GetRotation())){
-		 return CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_right, d++)
-		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left, d++)
-		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right, d++)
-		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left, d++);
+		 return CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_right)
+		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_right, tree2->is_leaf() ? tree2 : tree2->m_left)
+		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right)
+		 	|| CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left);
 
 		 //std::cout << d << std::endl;
 		/*++d;
@@ -376,6 +449,7 @@ bool Renderer::CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::View
 		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_right, d);
 		stam |= CheckCollisionRec(obj1, obj2, tree1->is_leaf() ? tree1 : tree1->m_left, tree2->is_leaf() ? tree2 : tree2->m_left, d);*/
 	}
+
 	return false;
 }
 
@@ -385,14 +459,18 @@ bool Renderer::CheckCollision() {
 		scn->data_list[1].Pause();
 		return true;
 	}*/
+
+
 	for (auto& object1 : scn->data_list)
 	{
 		for (auto& object2 : scn->data_list)
 		{
 			if (object1.id != object2.id) { // checking we're not checking the collision between an object and itself
 				if (!object1.pause || !object2.pause) {
-					if (CheckCollisionRec(object1, object2, object1.tree, object2.tree, 0)) {
+					if (CheckCollisionRec(object1, object2, object1.tree, object2.tree)) {
 						//std::cout << "fuck "<< std::endl;
+						object1.center_dif = Eigen::Vector3d(0, 0, 0);
+						object2.center_dif = Eigen::Vector3d(0, 0, 0);
 						object1.pause = true;
 						object2.pause = true;
 						return true;
