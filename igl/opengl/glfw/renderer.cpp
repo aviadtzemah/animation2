@@ -258,35 +258,93 @@ void Renderer::Move() {
 	}
 }
 
+double Renderer::sign(int i, int j) {
+	if ((i == 0 && j == 1) || (i == 1 && j == 2) || (i == 2 && j == 0)) {
+		return 1.0;
+	}
+	else {
+		return -1.0;
+	}
+}
+
+double Renderer::c_j(Eigen::RowVector3d Ai0, Eigen::RowVector3d Ai1, Eigen::RowVector3d Bj, double sign) {
+	return sign * Ai0.dot(Ai1.cross(Bj));
+}
+
+double Renderer::c_i(Eigen::RowVector3d Bj0, Eigen::RowVector3d Ai, Eigen::RowVector3d Bj1, double sign) {
+	return sign * Bj0.dot(Ai.cross(Bj1));
+}
+
 bool Renderer::does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedBox<double, 3> box2, Eigen::Matrix3d rotation1, Eigen::Matrix3d rotation2) {
 	Eigen::RowVector3d D = box1.center() - box2.center();
 
 	// box 1 axis
-	Eigen::RowVector3d A1 = rotation1.row(0);
-	Eigen::RowVector3d A2 = rotation1.row(1);
-	Eigen::RowVector3d A3 = rotation1.row(2);
+	Eigen::RowVector3d A0 = rotation1.row(0);
+	Eigen::RowVector3d A1 = rotation1.row(1);
+	Eigen::RowVector3d A2 = rotation1.row(2);
 
 	// box 1 extents
 	Eigen::RowVector3d sizes = box1.sizes();
-	double a1 = sizes(0);
-	double a2 = sizes(1);
-	double a3 = sizes(2);
+	double a0 = sizes(0);
+	double a1 = sizes(1);
+	double a2 = sizes(2);
 
 	// box 2 axis
-	Eigen::RowVector3d B1 = rotation2.row(0);
-	Eigen::RowVector3d B2 = rotation2.row(1);
-	Eigen::RowVector3d B3 = rotation2.row(2);
+	Eigen::RowVector3d B0 = rotation2.row(0);
+	Eigen::RowVector3d B1 = rotation2.row(1);
+	Eigen::RowVector3d B2 = rotation2.row(2);
 	
 	// box 2 extents
 	sizes = box2.sizes();
-	double b1 = sizes(0);
-	double b2 = sizes(1);
-	double b3 = sizes(2);
+	double b0 = sizes(0);
+	double b1 = sizes(1);
+	double b2 = sizes(2);
 
-	
+	// checking intersection
+	// NOT SURE ABOUT THE CALCULATION OF cij
+	double c00 = c_i(B1, A0, B2, sign(1, 2));
+	double c01 = c_i(B0, A0, B2, sign(0, 2));
+	double c02 = c_i(B0, A0, B1, sign(0, 1));
 
-	/*std::cout << "box1 size: " << box1.sizes() << std::endl;
-	std::cout << "box2 size: " << box2.sizes() << std::endl;*/
+	// first check
+	if (std::abs(A0.dot(D)) > a0 + (b0 * std::abs(c00) + b1 * std::abs(c01) + b2 * std::abs(c02))) {
+		return false;
+	}
+
+	double c10 = c_i(B1, A1, B2, sign(1, 2));
+	double c11 = c_i(B0, A1, B2, sign(0, 2));
+	double c12 = c_i(B0, A1, B1, sign(0, 1));
+
+	// second check
+	if (std::abs(A1.dot(D)) > a1 + (b0 * std::abs(c10) + b1 * std::abs(c11) + b2 * std::abs(c12))) {
+		return false;
+	}
+
+	double c20 = c_i(B1, A1, B2, sign(1, 2));
+	double c21 = c_i(B0, A1, B2, sign(0, 2));
+	double c22 = c_i(B0, A1, B1, sign(0, 1));
+
+	// third check
+	if (std::abs(A2.dot(D)) > a2 + (b0 * std::abs(c20) + b1 * std::abs(c21) + b2 * std::abs(c22))) {
+		return false;
+	}
+
+	// fourth check
+	if (std::abs(B0.dot(D)) > b0 + (a0 * std::abs(c00) + a1 * std::abs(c10) + a2 * std::abs(c20))) {
+		return false;
+	}
+
+	// fifth check
+	if (std::abs(B1.dot(D)) > b1 + (a0 * std::abs(c01) + a1 * std::abs(c11) + a2 * std::abs(c21))) {
+		return false;
+	}
+
+	// sixth check
+	if (std::abs(B2.dot(D)) > b2 + (a0 * std::abs(c02) + a1 * std::abs(c12) + a2 * std::abs(c22))) {
+		return false;
+	}
+
+	// seventh check...
 
 	return true;
 }
