@@ -109,12 +109,11 @@ public:
 	inline bool IsPicked() { return scn->isPicked; }
 	void Move();
 	bool CheckCollision();
-	bool CheckCollisionRec(igl::opengl::ViewerData obj1, igl::opengl::ViewerData obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2);
-	bool does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedBox<double, 3> box2, Eigen::Matrix3d rotation1, Eigen::Matrix3d rotation2);
+	bool CheckCollisionRec(igl::opengl::ViewerData* obj1, igl::opengl::ViewerData *obj2, igl::AABB<Eigen::MatrixXd, 3>* tree1, igl::AABB<Eigen::MatrixXd, 3>* tree2);
+	bool does_intersect(Eigen::AlignedBox<double, 3> box1, Eigen::AlignedBox<double, 3> box2, Eigen::Matrix3d rotation1, Eigen::Matrix3d rotation2, Eigen::Vector3d center_dif1, Eigen::Vector3d center_dif2);
 	double sign(int i, int j);
 	double c_j(Eigen::RowVector3d Ai0, Eigen::RowVector3d Ai1, Eigen::RowVector3d Bj, double sign);
 	double c_i(Eigen::RowVector3d Bj0, Eigen::RowVector3d Ai, Eigen::RowVector3d Bj1, double sign);
-	bool RecMove(igl::AABB<Eigen::MatrixXd, 3>* tree, Eigen::Vector3d direction);
 	
 private:
 	// Stores all the viewing options
@@ -129,7 +128,5 @@ private:
 	double doubleVariable;
 	igl::opengl::glfw::imgui::ImGuiMenu* menu;
 	double z;
-	// bool pause;
-	// int direction;
 };
 

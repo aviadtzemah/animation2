@@ -47,29 +47,15 @@ IGL_INLINE void igl::opengl::ViewerData::set_face_based(bool newvalue)
   }
 }
 
-IGL_INLINE bool igl::opengl::ViewerData::RecMove(igl::AABB<Eigen::MatrixXd, 3>* tree, Eigen::Vector3d direction) {
-    if (tree->is_leaf()) {
-        tree->m_box.translate(direction);
-        return true;
-    }
-    else {
-        tree->m_box.translate(direction);
-        RecMove(tree->m_right, direction);
-        RecMove(tree->m_left, direction);
-    }
-    return false;
-}
-
 IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
   	pause = true;
 	direction = 0;
     center_dif = Eigen::Vector3d(0, 0, 0);
-    MyTranslate(Eigen::Vector3d(id * 2, 0 , 0), true);
+    MyTranslate(Eigen::Vector3d(id * 2, 0, 0), true);
+    center_dif += Eigen::Vector3d(id * 2, 0, 0);
     tree = new igl::AABB<Eigen::MatrixXd, 3>();
     tree->init(V, F);
     outer_box = tree->m_box;
-    //tree->m_box.translate(Eigen::Vector3d(id * 2, 0, 0));
-    center_dif += Eigen::Vector3d(id * 2, 0, 0);
 
     std::cout << "main center: " << tree->m_box.center() << std::endl;
     std::cout << "left center:" << tree->m_left->m_box.center() << std::endl;
@@ -85,19 +71,6 @@ IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
         (Eigen::RowVector3d)outer_box.corner(outer_box.TopLeftCeil),
         (Eigen::RowVector3d)outer_box.corner(outer_box.TopRightCeil);
 
-    // Edges of the bounding box
-    /*add_edges(BottomLeftCeil, BottomRightCeil, colorVec);
-	add_edges(BottomLeftCeil, BottomLeftFloor, colorVec);
-	add_edges(BottomRightCeil, BottomRightFloor, colorVec);
-	add_edges(BottomLeftFloor, BottomRightFloor, colorVec);
-	add_edges(TopLeftCeil, TopRightCeil, colorVec);
-	add_edges(TopRightCeil, TopRightFloor, colorVec);
-	add_edges(TopLeftCeil, TopLeftFloor, colorVec);
-	add_edges(TopLeftFloor, TopRightFloor, colorVec);
-	add_edges(TopLeftCeil, BottomLeftCeil, colorVec);
-	add_edges(TopRightFloor, BottomRightFloor, colorVec);
-	add_edges(TopRightCeil, BottomRightCeil, colorVec);
-	add_edges(TopLeftFloor, BottomLeftFloor, colorVec);*/
     Eigen::MatrixXi E_box(12, 2);
     E_box <<
         4, 5,
@@ -125,14 +98,13 @@ IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
             Eigen::RowVector3d(0, 1, 0)
         );
 
-    draw_all(tree);
-    RecMove(tree, Eigen::Vector3d(id * 2, 0, 0));
+    //draw_all(tree);
 }
 
 IGL_INLINE bool igl::opengl::ViewerData::draw_all(igl::AABB<Eigen::MatrixXd, 3>* tree) {
     bool stam = true;
     if (tree->is_leaf()) {
-        draw_box(tree->m_box);
+        draw_box(tree->m_box, Eigen::RowVector3d(1,1,1));
         return true;
     }
     else {
@@ -157,7 +129,7 @@ IGL_INLINE void igl::opengl::ViewerData::Pause(){
 	pause = !pause;
 }
 
-IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> box) {
+IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> box, Eigen::RowVector3d color) {
   Eigen::MatrixXd V_box(8, 3);
     V_box <<
         (Eigen::RowVector3d)box.corner(box.BottomLeftFloor),
@@ -185,7 +157,7 @@ IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> b
       2, 0;
 
     // Plot the corners of the bounding box as points
-    add_points(V_box, Eigen::RowVector3d(1, 1, 1));
+    add_points(V_box, color);
 
     // Plot the edges of the bounding box
     for (unsigned i = 0;i < E_box.rows(); ++i)
@@ -193,7 +165,7 @@ IGL_INLINE void igl::opengl::ViewerData::draw_box(Eigen::AlignedBox<double, 3> b
         (
             V_box.row(E_box(i, 0)),
             V_box.row(E_box(i, 1)),
-            Eigen::RowVector3d(1, 1, 1)
+            color
         );     
 }
 

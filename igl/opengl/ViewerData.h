@@ -165,8 +165,7 @@ public:
   IGL_INLINE void init_mesh();
   IGL_INLINE void SetDirection(int dir);
   IGL_INLINE void Pause();
-  IGL_INLINE void draw_box(Eigen::AlignedBox<double, 3> box);
-  IGL_INLINE bool RecMove(igl::AABB<Eigen::MatrixXd, 3>* tree, Eigen::Vector3d direction);
+  IGL_INLINE void draw_box(Eigen::AlignedBox<double, 3> box, Eigen::RowVector3d color);
   Eigen::Vector3d center_dif;
   // Per face attributes
   Eigen::MatrixXd F_normals; // One normal per face
