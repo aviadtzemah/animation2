@@ -48,8 +48,16 @@ IGL_INLINE void igl::opengl::ViewerData::set_face_based(bool newvalue)
 }
 
 IGL_INLINE void igl::opengl::ViewerData::init_mesh() {
-  	pause = true;
-	direction = 0;
+    if (id == 0) {
+        pause = false;;
+        direction = 4;
+    }
+    else {
+        pause = true;
+        direction = 0;
+    }
+    reset_V = V;
+    reset_F = F;
     center_dif = Eigen::Vector3d(0, 0, 0);
     MyTranslate(Eigen::Vector3d(id * 2, 0, 0), true);
     center_dif += Eigen::Vector3d(id * 2, 0, 0);

@@ -182,9 +182,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			scn->data().SetDirection(4);
 			//rndr->TranslateCamera(Eigen::Vector3f(-0.01f, 0,0));
 			break;
-
 		case ' ':
-
 			break;
 		case 'P':
 		case 'p':

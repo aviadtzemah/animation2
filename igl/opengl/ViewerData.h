@@ -160,6 +160,8 @@ public:
   // OUR ADDITIONS
   igl::AABB<Eigen::MatrixXd,3> * tree;
   Eigen::AlignedBox<double, 3> outer_box;
+  Eigen::MatrixXd reset_V;
+  Eigen::MatrixXi reset_F;
   bool pause;
   int direction;
   IGL_INLINE void init_mesh();
